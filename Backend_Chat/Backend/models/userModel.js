@@ -15,7 +15,7 @@ const userSchema = mongoose.Schema({
 userSchema.pre("save",async function (next){
     if (!this.isModified("password")) return  next() // only modify if its modified
         try{
-          const salt = bcrypt.genSalt(10); // genereate salt of 10 rounds
+          const salt = await bcrypt.genSalt(10); // genereate salt of 10 rounds
           this.password = await bcrypt.hash(this.password, salt);
           next(); // Proceed with saving the user document
         }catch(err){
