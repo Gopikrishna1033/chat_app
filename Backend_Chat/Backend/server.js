@@ -15,9 +15,10 @@ mongoose.connect(process.env.CONNECTION_STRING).then((response)=>{console.log(`M
     process.exit(1)
 })
 app.use(express.json()) // body
+app.use(express.urlencoded({ extended: true }));
 app.use("/api/user",userRoutes)
-app.user(notFound)
-app.user(errorHandler)
+app.use(notFound)
+app.use(errorHandler)
 app.listen(port,hostname,()=>{
     console.log(`Server starts running on ${port}...`)
 })

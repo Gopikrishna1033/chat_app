@@ -1,11 +1,11 @@
 const asyncHandler = require("express-async-handler") // It automatically catches any errors inside your asynchronous route handlers and sends them to the error-handling middleware, simplifying error management.
 const User = require("../models/userModel")
 const generateToken = require("../token/generateToken")
+const sharp = require("sharp")
 
 const registerUser = asyncHandler(async (req,res)=>{
-    console.log(req.body)
-    const {name,email,password,pic} = req.body
-
+    const { name, email, password, image } = req.body;
+    console.log(name, email, password, image);
     if (!name || !email || !password){
         res.status(400)
         throw new Error("Please Enter all the fields...")
@@ -17,22 +17,36 @@ const registerUser = asyncHandler(async (req,res)=>{
         throw new Error("User already Exists..")
     }
 
-    const user = await User.create({
-        name,
-        email,
-        password,
-        pic
-    })
+    let imgBase64 = ""
+    if (req.file) {
+      const buffer = await sharp(req.file.buffer)
+        .resize({ width: 100, height: 100 })
+        .jpeg({ quality: 70 })
+        .toBuffer();
+      imgBase64 = buffer.toString("base64");
+    } else {
+      const defaultImageUrl =
+        "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg";
+
     
+      imgBase64 = defaultImageUrl.toString("base64");
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password,
+      image:imgBase64,
+    });
+    console.log(user,"User Created Successfully")
     if(user){
         res.status(200).json({
-            _id:user._id,
-            name:user.name,
-            email:user.email,
-            pic:user.pic,
-            token: generateToken(user._id)
-
-        })
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          pic: user.image,
+          token: generateToken(user._id),
+        });
     }else{
         res.status(400)
         throw new Error("Failed to create the user")
@@ -45,8 +59,8 @@ const authUser = asyncHandler(async (req,res)=>{
     const {email,password} = req.body
 
     const user = await User.findOne({email})
-
-    if (user && await User.matchPassword(password)){
+    console.log(user)
+    if (user && await user.matchPassword(password)){
         res.json({
           _id: user._id,
           name: user.name,
