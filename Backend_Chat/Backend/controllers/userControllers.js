@@ -5,7 +5,6 @@ const sharp = require("sharp")
 
 const registerUser = asyncHandler(async (req,res)=>{
     const { name, email, password, image } = req.body;
-    console.log(name, email, password, image);
     if (!name || !email || !password){
         res.status(400)
         throw new Error("Please Enter all the fields...")
@@ -38,7 +37,7 @@ const registerUser = asyncHandler(async (req,res)=>{
       password,
       image:imgBase64,
     });
-    console.log(user,"User Created Successfully")
+
     if(user){
         res.status(200).json({
           _id: user._id,
@@ -59,7 +58,7 @@ const authUser = asyncHandler(async (req,res)=>{
     const {email,password} = req.body
 
     const user = await User.findOne({email})
-    console.log(user)
+
     if (user && await user.matchPassword(password)){
         res.json({
           _id: user._id,
@@ -82,7 +81,7 @@ const allUsers = asyncHandler(async (req,res)=>{
     }:{
 
     }
-    const users = await User.find(keyword).find({_id:{$ne:req.user._id}})
+    const users = await User.find(keyword)
     res.status(200).json(users)
 })
 
