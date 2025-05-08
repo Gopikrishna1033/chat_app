@@ -1,24 +1,18 @@
-import React, { useEffect,useState } from 'react'
-import axios from 'axios'
-import {Box} from "@mui/material"
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Box } from "@mui/material";
 const ChatPage = () => {
-  const [chats,setChats] = useState([])
-  const fetchData = async()=>{
-    const response = await axios.get("http://localhost:8000/api/chat")
-    setChats(response?.data)
-  }
-  useEffect(()=>{
-    fetchData()
-  },[])
+  const [chats, setChats] = useState([]);
+  const fetchData = async () => {
+    const response = await axios.get("http://localhost:8000/api/chat");
+    setChats(response?.data);
+  };
+
   return (
     <>
-      {chats.map((data, index) => (
-        <Box key={index} >
-          {data.chatName}
-        </Box>
-      ))}
+      <Box>Chat Page</Box>
     </>
   );
-}
+};
 
-export default ChatPage
+export default ChatPage;

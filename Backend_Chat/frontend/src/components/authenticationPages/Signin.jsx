@@ -1,35 +1,48 @@
-import { Box, Button, InputAdornment, TextField, Typography } from '@mui/material'
-import React, { useState } from 'react'
+import {
+  Box,
+  Button,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
+import React, { useState } from "react";
 import Grid from "@mui/material/Grid";
-import axios from 'axios';
+import axios from "axios";
+import Snackbar from "@mui/material/Snackbar";
+import SnackbarContent from "@mui/material/SnackbarContent";
 const Signin = () => {
-      const [email, setEmail] = useState("");
-      const [password, setPassword] = useState("");
-      const [confirmPassword, setConfirmPassword] = useState("");
-      const [image, setImage] = useState(null);
-      const [data, setData] = useState(null);
-      const [name,setName] = useState("")
-        const [show,setShow] = useState(false)
-        const [confirmShow,setConfirmShow] = useState(false)
-        
-  const handleSubmit = async ()=>{
-    const formData = new FormData()
-    formData.append("name",name)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [image, setImage] = useState(null);
+  const [data, setData] = useState(null);
+  const [name, setName] = useState("");
+  const [show, setShow] = useState(false);
+  const [confirmShow, setConfirmShow] = useState(false);
+  const [open,setOpen] = useState(false)
+
+  const handleSubmit = async () => {
+    const formData = new FormData();
+    formData.append("name", name);
     formData.append("email", email);
     formData.append("password", password);
-    console.log(image,"imjn")
     if (image) {
       formData.append("image", image);
     }
     const response = await axios.post(
       "http://localhost:8000/api/user",
-      formData,
+      formData
     );
-    const data = response.data
-    setData(data)
-  }
-        console.log(data,"response  ")  
-        console.log(image,"image")
+    const data = response.data;
+    setData(data);
+    if (response.status === 200) {
+     setOpen(true)
+    }
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   return (
     <div>
       <Box
@@ -92,7 +105,7 @@ const Signin = () => {
           id="fileInput"
           style={{ display: "none" }}
           accept="image/*"
-          onChange={(e)=>setImage(e.target.files[0])}
+          onChange={(e) => setImage(e.target.files[0])}
         />
         <label
           htmlFor="fileInput"
@@ -111,9 +124,26 @@ const Signin = () => {
         <Button variant="contained" color="primary" onClick={handleSubmit}>
           Sign Up
         </Button>
+        <Snackbar
+          open={open}
+          autoHideDuration={7000}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: "top", 
+            horizontal: "right", 
+          }}
+        >
+          <SnackbarContent
+            message="You have registered successfully. Please login!"
+            sx={{
+              backgroundColor: "green", 
+              color: "white", 
+            }}
+          />
+        </Snackbar>
       </Box>
     </div>
   );
-}
+};
 
-export default Signin
+export default Signin;

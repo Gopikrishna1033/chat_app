@@ -1,9 +1,9 @@
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { Box, Tab, Typography } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import Signin from "./Signin";
 import Login from "./Login";
-import useStyles from "./Style"
+import useStyles from "./Style";
 
 const AuthPages = () => {
   const [value, setValue] = React.useState("1");
@@ -11,6 +11,10 @@ const AuthPages = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+  useEffect(() => {
+    console.log(value);
+  }, [value]);
+
   return (
     <div>
       <Box sx={{ width: 500, mx: "auto", mt: 5 }}>
@@ -39,7 +43,7 @@ const AuthPages = () => {
 
           {/* Login Panel */}
           <TabPanel value="1">
-            <Login/>
+            <Login />
           </TabPanel>
           {/* Sign Up Panel */}
           <TabPanel value="2">
