@@ -5,6 +5,7 @@ const port = process.env.PORT
 const hostname = process.env.HOST_NAME;
 const mongoose = require("mongoose")
 const userRoutes = require("./routes/userRouter")
+const chatRoutes = require("./routes/chatRoutes")
 const cors = require("cors");
 const { notFound, errorHandler } = require("./middleware/errorHandlers");
 app.use(cors()) // allow all origins by default
@@ -16,7 +17,8 @@ mongoose.connect(process.env.CONNECTION_STRING).then((response)=>{console.log(`M
 })
 app.use(express.json()) // body
 app.use(express.urlencoded({ extended: true }));
-app.use("/api/user",userRoutes)
+app.use("/api/user",userRoutes) // sign and login routes
+app.use("/api/chats",chatRoutes) // chat routes 
 app.use(notFound)
 app.use(errorHandler)
 app.listen(port,hostname,()=>{
