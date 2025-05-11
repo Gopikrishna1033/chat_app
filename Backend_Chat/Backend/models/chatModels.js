@@ -19,8 +19,8 @@ const chatModel = mongoose.Schema(
     },
   },
   {
-    timeStamp: true,
+    timeStamps: true,
   }
 );
 const Chat = mongoose.model("Chat",chatModel) // creating the model for schema for interacting with database.
-module.export = Chat
+module.exports = Chat
