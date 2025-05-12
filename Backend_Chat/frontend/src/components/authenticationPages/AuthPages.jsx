@@ -4,16 +4,21 @@ import React, { useEffect } from "react";
 import Signin from "./Signin";
 import Login from "./Login";
 import useStyles from "./Style";
+import { useNavigate } from "react-router-dom";
 
 const AuthPages = () => {
   const [value, setValue] = React.useState("1");
   const classes = useStyles();
+  const navigate = useNavigate()
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
   useEffect(() => {
-    console.log(value);
-  }, [value]);
+    const user = JSON.parse(localStorage.getItem("userInfo"))
+    if(user){
+      navigate("/chatpage");
+    }
+  }, [navigate]);
 
   return (
     <div>

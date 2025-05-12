@@ -9,6 +9,7 @@ import {
 import axios from "axios";
 import Snackbar from "@mui/material/Snackbar";
 import SnackbarContent from "@mui/material/SnackbarContent";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [show, setShow] = useState(false);
@@ -16,6 +17,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate()
 
   const handleSubmit = async () => {
     const response = await axios.post(
@@ -26,8 +28,14 @@ const Login = () => {
     const data = response.data;
     if (response.status === 200) {
       setOpen(true);
+      navigate("/chatpage");
     }
-    console.log(data);
+    const userData = {
+      name:data?.name,
+      email:data?.email,
+      token:data?.token
+    }
+    localStorage.setItem("userInfo",JSON.stringify(userData))
   };
   const handleClose = () => {
     setOpen(false);
