@@ -9,13 +9,13 @@ import { useNavigate } from "react-router-dom";
 const AuthPages = () => {
   const [value, setValue] = React.useState("1");
   const classes = useStyles();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("userInfo"))
-    if(user){
+    const user = JSON.parse(localStorage.getItem("userInfo"));
+    if (user) {
       navigate("/chatpage");
     }
   }, [navigate]);
@@ -24,7 +24,7 @@ const AuthPages = () => {
     <div>
       <Box sx={{ width: 500, mx: "auto", mt: 5 }}>
         <Box className={classes.container}>
-          <Typography className={classes.textSize}>Quick Chat</Typography>
+          <Typography className={classes.textSize}>NexTalk</Typography>
         </Box>
         <TabContext value={value}>
           <Box>
