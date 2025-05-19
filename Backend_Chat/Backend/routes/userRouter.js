@@ -6,6 +6,6 @@ const router = express.Router()
 
 router.route("/").post(upload.single("image"),registerUser)
  router.post("/login",authUser)
- router.route("/").get(allUsers)
+ router.route("/").get(Protect,allUsers)
 
 module.exports = router

@@ -75,13 +75,14 @@ const authUser = asyncHandler(async (req, res) => {
 const allUsers = asyncHandler(async (req, res) => {
   const keyword = req.query.search
     ? {
-        $or: [ // searching over name or email by using regex here i stands for seaching for both lower and upper case letters.
-          { name: { $regex: req.query.search, $options: "i" } }, 
+        $or: [
+          // searching over name or email by using regex here i stands for seaching for both lower and upper case letters.
+          { name: { $regex: req.query.search, $options: "i" } },
           { email: { $regex: req.query.search, $options: "i" } },
         ],
       }
     : {};
-  const users = await User.find(keyword).find({ _id: { $ne: req.user._id } }); // searching over all user except the current user  
+  const users = await User.find({ ...keyword, _id: { $ne: req.user.id } }).select("-password"); // searching over all user except the current user
   res.status(200).json(users);
 });
 

@@ -1,53 +1,128 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import { Box, InputAdornment, TextField, Typography } from "@mui/material";
-import {chatContext} from "../context/ContextApi"
+import {
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { chatContext } from "../context/ContextApi";
 const ChatPage = () => {
-  const userContext = useContext(chatContext)
-  const {user} = userContext
-  console.log(user,"chat")
-  const [chats, setChats] = useState([]);
-  const fetchData = async () => {
-    const response = await axios.get("http://localhost:8000/api/chat");
-    setChats(response?.data);
+  const userContext = useContext(chatContext);
+  const { user } = userContext;
+  const [searchText, setSearchText] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
+  const handleSearchText = (event) => {
+    setSearchText(event.target.value);
   };
+  const headers = {
+    headers: {
+      Authorization: `Bearer ${user.token}`,
+    },
+  };
+  const handleSearchData = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/user?search=${searchText}`,
+        headers
+      );
+      setSearchResults(response?.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
 
   return (
     <>
-      <Box sx={{ display: "flex", width: "100%" }}>
-        <Box sx={{ background: "yellow", width: "20%" }}>
-          <Box sx={{display:"flex",flexDirection:"column",gap:"15px",padding:"10px",alignItems:"center",justifyContent:"center"}}>
-           <Box> <Typography variant="h5">NexTalk</Typography></Box>
-           <Box>
-            <TextField placeholder="search" slotProps={{input:{
-              endAdornment:(
-                <InputAdornment position="end">
-                  <SearchOutlinedIcon/>
-                </InputAdornment>
-              )
-            }}}
-            sx={{border:"1px solid black",
-              borderRadius:"50px",
-              "& .MuiOutlinedInput-root": {
-  borderRadius: "50px",
-  height:"2.75em",
-  "& fieldset": {
-    border: "none",
-  },
-  "&:hover fieldset": {
-    border: "none",
-  },
-  "&.Mui-focused fieldset": {
-    border: "2px solid black", // optional, to differentiate focus state
-  },
-}
+      <Box
+        sx={{
+          display: "flex",
+          width: "100%",
+          height: "100vh",
+          background: "#FAFAFA",
+        }}
+      >
+        <Box
+          sx={{
+            width: "20%",
+            borderRight: "1px solid black",
+            overflow: "auto",
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
           }}
-            />
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "15px",
+              padding: "10px",
+              alignItems: "center",
+              justifyContent: "center",
+              background:"#fff"
+            }}
+          >
+            <Box>
+              {" "}
+              <Typography variant="h5">NexTalk</Typography>
             </Box>
+            <Box>
+              <TextField
+                placeholder="search"
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <SearchOutlinedIcon />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+                onChange={(handleSearchText, handleSearchData)}
+                sx={{
+                  border: "1px solid black",
+                  borderRadius: "50px",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "50px",
+                    height: "2.75em",
+                    "& fieldset": {
+                      border: "none",
+                    },
+                    "&:hover fieldset": {
+                      border: "none",
+                    },
+                    "&.Mui-focused fieldset": {
+                      border: "1px solid black",
+                    },
+                  },
+                }}
+              />
+            </Box>
+            {searchResults &&
+              searchResults.map((data) => {
+                return (
+                  <Card sx={{ width: "100%", boxShadow: "none",cursor:"pointer" }}>
+                    <CardContent sx={{ display: "flex", gap: "15px",alignItems:"center" }}>
+                      <Avatar src={data?.image} />
+                      <Typography>{data?.name}</Typography>
+                    </CardContent>
+                  </Card>
+                );
+              })}
           </Box>
         </Box>
-        <Box sx={{ background: "green" }}>j</Box>
+        <Box sx={{ flex: 1, padding: "16px" }}>
+          <Typography variant="body1" color="textSecondary">
+            Select a chat or start a new conversation
+          </Typography>
+        </Box>
       </Box>
     </>
   );
