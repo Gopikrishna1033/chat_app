@@ -16,28 +16,32 @@ const ChatPage = () => {
   const { user } = userContext;
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-
-  const handleSearchText = (event) => {
-    setSearchText(event.target.value);
-  };
   const headers = {
     headers: {
       Authorization: `Bearer ${user.token}`,
     },
   };
-  const handleSearchData = async () => {
+ 
+  const handleSearchText = async (event) => {
+    const value = event.target.value;
+    setSearchText(value);
+
+    if (value.trim() === "") {
+      setSearchResults([]);
+      return;
+    }
+
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/user?search=${searchText}`,
+        `http://localhost:8000/api/user?search=${value}`,
         headers
       );
-      setSearchResults(response?.data);
+      setSearchResults(response.data);
     } catch (error) {
-      console.log(error);
+      console.error("Search error:", error);
     }
   };
-
-
+  
   return (
     <>
       <Box
@@ -66,7 +70,7 @@ const ChatPage = () => {
               padding: "10px",
               alignItems: "center",
               justifyContent: "center",
-              background:"#fff"
+              background: "#fff",
             }}
           >
             <Box>
@@ -85,7 +89,7 @@ const ChatPage = () => {
                     ),
                   },
                 }}
-                onChange={(handleSearchText, handleSearchData)}
+                onChange={handleSearchText}
                 sx={{
                   border: "1px solid black",
                   borderRadius: "50px",
@@ -108,8 +112,16 @@ const ChatPage = () => {
             {searchResults &&
               searchResults.map((data) => {
                 return (
-                  <Card sx={{ width: "100%", boxShadow: "none",cursor:"pointer" }}>
-                    <CardContent sx={{ display: "flex", gap: "15px",alignItems:"center" }}>
+                  <Card
+                    sx={{ width: "100%", boxShadow: "none", cursor: "pointer" }}
+                  >
+                    <CardContent
+                      sx={{
+                        display: "flex",
+                        gap: "15px",
+                        alignItems: "center",
+                      }}
+                    >
                       <Avatar src={data?.image} />
                       <Typography>{data?.name}</Typography>
                     </CardContent>
