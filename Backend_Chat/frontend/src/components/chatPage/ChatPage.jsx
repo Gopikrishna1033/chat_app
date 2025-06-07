@@ -4,6 +4,7 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import {
   Avatar,
   Box,
+  Button,
   Card,
   CardContent,
   InputAdornment,
@@ -21,7 +22,7 @@ const ChatPage = () => {
       Authorization: `Bearer ${user.token}`,
     },
   };
- 
+
   const handleSearchText = async (event) => {
     const value = event.target.value;
     setSearchText(value);
@@ -41,7 +42,7 @@ const ChatPage = () => {
       console.error("Search error:", error);
     }
   };
-  
+
   return (
     <>
       <Box
@@ -110,7 +111,7 @@ const ChatPage = () => {
               />
             </Box>
             {searchResults &&
-              searchResults.map((data) => {
+              searchResults?.map((data) => {
                 return (
                   <Card
                     sx={{ width: "100%", boxShadow: "none", cursor: "pointer" }}
@@ -122,7 +123,11 @@ const ChatPage = () => {
                         alignItems: "center",
                       }}
                     >
-                      <Avatar src={data?.image} />
+                      {console.log(data)}
+                      <Avatar
+                        src={`data:${data?.imageType};base64,${data?.image}`}
+                      />
+
                       <Typography>{data?.name}</Typography>
                     </CardContent>
                   </Card>
@@ -134,6 +139,14 @@ const ChatPage = () => {
           <Typography variant="body1" color="textSecondary">
             Select a chat or start a new conversation
           </Typography>
+
+          <Button
+            onClick={() => {
+              localStorage.clear();
+            }}
+          >
+            logout
+          </Button>
         </Box>
       </Box>
     </>

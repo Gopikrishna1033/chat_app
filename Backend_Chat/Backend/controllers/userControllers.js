@@ -16,25 +16,23 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error("User already Exists..");
   }
 
-  let imgBase64 = "";
+  let imgBase64 = null;
+  let imageType = null;
   if (req.file) {
     const buffer = await sharp(req.file.buffer)
       .resize({ width: 100, height: 100 })
       .jpeg({ quality: 70 })
       .toBuffer();
     imgBase64 = buffer.toString("base64");
-  } else {
-    const defaultImageUrl =
-      "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg";
-
-    imgBase64 = defaultImageUrl.toString("base64");
-  }
+    imageType = req.file.mimetype;
+  } 
 
   const user = await User.create({
     name,
     email,
     password,
     image: imgBase64,
+    imageType,
   });
 
   if (user) {
@@ -82,7 +80,10 @@ const allUsers = asyncHandler(async (req, res) => {
         ],
       }
     : {};
-  const users = await User.find({ ...keyword, _id: { $ne: req.user.id } }).select("-password"); // searching over all user except the current user
+  const users = await User.find({
+    ...keyword,
+    _id: { $ne: req.user.id },
+  }).select("-password"); // searching over all user except the current user
   res.status(200).json(users);
 });
 
