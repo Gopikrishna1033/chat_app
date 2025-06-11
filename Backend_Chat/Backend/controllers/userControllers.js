@@ -60,7 +60,8 @@ const authUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      pic: user.image,
+      image: user.image,
+      imageType:user.imageType,
       token: generateToken(user._id),
     });
   } else {
@@ -73,11 +74,11 @@ const authUser = asyncHandler(async (req, res) => {
 const allUsers = asyncHandler(async (req, res) => {
   const keyword = req.query.search
     ? {
-        $or: [
+        // $or: [
           // searching over name or email by using regex here i stands for seaching for both lower and upper case letters.
-          { name: { $regex: req.query.search, $options: "i" } },
-          { email: { $regex: req.query.search, $options: "i" } },
-        ],
+           name: { $regex: req.query.search, $options: "i" } 
+          // { email: { $regex: req.query.search, $options: "i" } },
+        // ],
       }
     : {};
   const users = await User.find({
@@ -85,6 +86,7 @@ const allUsers = asyncHandler(async (req, res) => {
     _id: { $ne: req.user.id },
   }).select("-password"); // searching over all user except the current user
   res.status(200).json(users);
+  console.log(users)
 });
 
 module.exports = { registerUser, authUser, allUsers };

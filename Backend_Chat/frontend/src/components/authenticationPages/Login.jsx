@@ -33,6 +33,8 @@ const Login = () => {
     const userData = {
       name:data?.name,
       email:data?.email,
+      image:data?.image,
+      imageType:data?.imageType,
       token:data?.token
     }
     localStorage.setItem("userInfo",JSON.stringify(userData))

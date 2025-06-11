@@ -13,6 +13,7 @@ const ContextApi = ({children}) => {
             navigate("/")
         }
     },[navigate])
+    
   return (
     <>
         <chatContext.Provider value={{user , setUser}}>
