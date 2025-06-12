@@ -31,12 +31,13 @@ const Login = () => {
       navigate("/chatpage");
     }
     const userData = {
-      name:data?.name,
-      email:data?.email,
-      image:data?.image,
-      imageType:data?.imageType,
-      token:data?.token
-    }
+      _id: data._id,
+      name: data?.name,
+      email: data?.email,
+      image: data?.image,
+      imageType: data?.imageType,
+      token: data?.token,
+    };
     localStorage.setItem("userInfo",JSON.stringify(userData))
   };
   const handleClose = () => {

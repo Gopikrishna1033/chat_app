@@ -86,7 +86,6 @@ const allUsers = asyncHandler(async (req, res) => {
     _id: { $ne: req.user.id },
   }).select("-password"); // searching over all user except the current user
   res.status(200).json(users);
-  console.log(users)
 });
 
 module.exports = { registerUser, authUser, allUsers };
