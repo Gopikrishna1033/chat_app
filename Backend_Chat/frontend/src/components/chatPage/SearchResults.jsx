@@ -1,11 +1,11 @@
 import { Avatar, Box, Card, CardContent, Typography } from "@mui/material";
 import React from "react";
 
-const SearchResults = ({filteredChats, accessChat}) => {
+const SearchResults = ({ filteredChats, accessChat, loadingChat }) => {
   return (
     <>
       <Box>
-        {filteredChats &&
+        {filteredChats && loadingChat &&(
           filteredChats?.map((data, index) => {
             return (
               <Card
@@ -27,7 +27,7 @@ const SearchResults = ({filteredChats, accessChat}) => {
                 </CardContent>
               </Card>
             );
-          })}
+          }))}
       </Box>
     </>
   );

@@ -1,10 +1,11 @@
 import React, { useContext, useState } from "react";
 import axios from "axios";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import LogoutIcon from "@mui/icons-material/Logout";
 import AddCallIcon from "@mui/icons-material/AddCall";
 import VideoCallIcon from "@mui/icons-material/VideoCall";
-
+import SendIcon from "@mui/icons-material/Send";
+import AddReactionIcon from "@mui/icons-material/AddReaction";
+import AddIcon from "@mui/icons-material/Add";
 import {
   AppBar,
   Avatar,
@@ -22,13 +23,20 @@ import { chatContext } from "../context/ContextApi";
 import { useNavigate } from "react-router-dom";
 import SearchResults from "./SearchResults";
 import MyChats from "./MyChats";
+import MenuBox from "./MenuBox";
+import {
+  getSender,
+  getSenderImage,
+  getSenderImageType,
+} from "../../config/ChatLogic";
 const ChatPage = () => {
   const userContext = useContext(chatContext);
   const navigate = useNavigate();
   const { user, setSelectedChat, chats, setChats } = userContext;
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [loadingChat, setLoadingChat] = useState(false);
+  const [loadingChat, setLoadingChat] = useState(true);
+  const [loadChatBox,setLoadChatBox] =  useState(false)
 
   const headers = {
     headers: {
@@ -62,7 +70,7 @@ const ChatPage = () => {
 
   const accessChat = async (userId) => {
     try {
-      setLoadingChat(true);
+      // setLoadingChat(true);
       const response = await axios.post(
         `http://localhost:8000/api/chats/`,
         { userId },
@@ -72,12 +80,15 @@ const ChatPage = () => {
       if (!chats.find((chat) => chat._id === data._id))
         setChats([data, ...chats]);
       setSelectedChat(data);
-      setLoadingChat(false);
+      setLoadingChat(!loadingChat);
+      setLoadChatBox(!loadChatBox)
     } catch (error) {
       console.log(error);
     }
   };
+  const icons = [<AddReactionIcon />, <AddIcon />, <SendIcon />];
 
+  const loggeduser = JSON.parse(localStorage.getItem("userInfo"));
   return (
     <>
       <Box
@@ -131,9 +142,7 @@ const ChatPage = () => {
                   Talk
                 </Box>
               </Typography>
-              <IconButton>
-                <LogoutIcon sx={{ color: "#f44336" }} onClick={logout} />
-              </IconButton>
+              <MenuBox logout={logout} />
             </Box>
 
             <Box>
@@ -173,6 +182,7 @@ const ChatPage = () => {
             <SearchResults
               filteredChats={searchResults}
               accessChat={accessChat}
+              loadingChat={loadingChat}
             />
             <MyChats />
           </Box>
@@ -187,7 +197,12 @@ const ChatPage = () => {
         >
           <AppBar
             position="static"
-            sx={{ background: "white", boxShadow: "none", p: 2 }}
+            sx={{
+              background: "white",
+              boxShadow: "none",
+              p: 2,
+              minHeight: "50px",
+            }}
           >
             <Box
               sx={{
@@ -197,15 +212,33 @@ const ChatPage = () => {
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: "15px" }}>
-                <Avatar />
-                <Typography color="black" sx={{ fontSize: "18px" }}>
-                  hella
-                </Typography>
+                {loadChatBox &&(
+                  chats.map((chat, index) => {
+                    const senderImageType = getSenderImageType(loggeduser, chat.users);
+                    const senderImage = getSenderImage(loggeduser, chat.users);
+                    const senderName = !chat.isGroupChat ? getSender(loggeduser, chat.users) : chat.chatName;
+                  
+                    return (
+                      <React.Fragment key={chat._id || index}>
+                        <Avatar
+                          src={`data:${senderImageType};base64,${senderImage}`}
+                        />
+                        <Typography color="black" sx={{ fontSize: "18px" }}>
+                          {senderName}
+                        </Typography>
+                      </React.Fragment>
+                    );
+                  })
+                )}
               </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                <AddCallIcon sx={{ cursor: "pointer", color: "grey" }} />
-                <VideoCallIcon sx={{ cursor: "pointer", color: "grey" }} />
-              </Box>
+              {loadChatBox && (
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: "20px" }}
+                >
+                  <AddCallIcon sx={{ cursor: "pointer", color: "grey" }} />
+                  <VideoCallIcon sx={{ cursor: "pointer", color: "grey" }} />
+                </Box>
+              )}
             </Box>
           </AppBar>
           <Box
@@ -216,33 +249,53 @@ const ChatPage = () => {
             }}
           >
             {/* Chat messages, typing indicators, etc. */}
-            {/* Example Placeholder */}
-            <Typography>Welcome to the chat!</Typography>
+            {!loadChatBox && (
+              <Typography
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginTop: "15rem",
+                }}
+              >
+                Welcome to the Nex Talk
+              </Typography>
+            )}
           </Box>
-          <Box sx={{ padding: "0px 30px 30px 30px" }}>
-            <TextField
-              fullWidth
-              sx={{
-                border: "1px solid #ccc",
-                borderRadius: "10px",
-                background: "#FAFAFA",
-                fontSize: "24px",
-                "& .MuiOutlinedInput-root": {
+          {loadChatBox && (
+            <Box sx={{ padding: "0px 30px 30px 30px" }}>
+              <TextField
+                fullWidth
+                placeholder="Type something here..."
+                sx={{
+                  border: "1px solid #ccc",
                   borderRadius: "10px",
-                  height: "3rem",
-                  "& fieldset": {
-                    border: "none",
+                  background: "#FAFAFA",
+                  fontSize: "24px",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "10px",
+                    height: "3rem",
+                    "& fieldset": {
+                      border: "none",
+                    },
+                    "&:hover fieldset": {
+                      border: "none",
+                    },
+                    "&.Mui-focused fieldset": {
+                      border: "1px solid #ccc",
+                    },
                   },
-                  "&:hover fieldset": {
-                    border: "none",
+                }}
+                slotProps={{
+                  input: {
+                    endAdornment: icons.map((icon, idx) => {
+                      return <IconButton key={idx}>{icon}</IconButton>;
+                    }),
                   },
-                  "&.Mui-focused fieldset": {
-                    border: "1px solid #ccc",
-                  },
-                },
-              }}
-            />
-          </Box>
+                }}
+              />
+            </Box>
+          )}
         </Box>
       </Box>
     </>

@@ -17,9 +17,11 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [open, setOpen] = useState(false);
+  const [errorMessage,setErrorMessage] = useState("")
   const navigate = useNavigate()
 
   const handleSubmit = async () => {
+    try{
     const response = await axios.post(
       "http://localhost:8000/api/user/login",
       { email, password },
@@ -27,7 +29,7 @@ const Login = () => {
     );
     const data = response.data;
     if (response.status === 200) {
-      setOpen(true);
+      
       navigate("/chatpage");
     }
     const userData = {
@@ -39,6 +41,11 @@ const Login = () => {
       token: data?.token,
     };
     localStorage.setItem("userInfo",JSON.stringify(userData))
+  }catch(err){
+    console.log(err?.response?.data?.message)
+    setOpen(true);
+    setErrorMessage(err?.response?.data?.message);
+  }
   };
   const handleClose = () => {
     setOpen(false);
@@ -71,8 +78,8 @@ const Login = () => {
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <SnackbarContent
-          message="login successful!"
-          sx={{ background: "green", color: "white" }}
+          message={errorMessage}
+          sx={{ background: "red", color: "white" }}
         />
       </Snackbar>
     </>

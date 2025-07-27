@@ -28,7 +28,7 @@ const MyChats = () => {
   }, []);
 
   return (
-    <>
+    <>{selectedChat &&
       <Box>
         {chats.map((chat) => (
           <Card
@@ -45,7 +45,7 @@ const MyChats = () => {
             </CardContent>
           </Card>
         ))}
-      </Box>
+      </Box>}
     </>
   );
 };
