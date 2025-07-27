@@ -29,14 +29,15 @@ import {
   getSenderImage,
   getSenderImageType,
 } from "../../config/ChatLogic";
+import { useEffect } from "react";
 const ChatPage = () => {
   const userContext = useContext(chatContext);
   const navigate = useNavigate();
-  const { user, setSelectedChat, chats, setChats } = userContext;
+  const { user, setSelectedChat, chats, setChats, selectedChat } = userContext;
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loadingChat, setLoadingChat] = useState(true);
-  const [loadChatBox,setLoadChatBox] =  useState(false)
+  const [loadChatBox, setLoadChatBox] = useState(false);
 
   const headers = {
     headers: {
@@ -80,12 +81,17 @@ const ChatPage = () => {
       if (!chats.find((chat) => chat._id === data._id))
         setChats([data, ...chats]);
       setSelectedChat(data);
-      setLoadingChat(!loadingChat);
-      setLoadChatBox(!loadChatBox)
+      setLoadChatBox(!loadChatBox);
     } catch (error) {
       console.log(error);
     }
   };
+  // useEffect(() => {
+  //   if (selectedChat) {
+  //     setLoadChatBox(true); // only runs when selectedChat updates
+  //   }
+  // }, [selectedChat]);
+
   const icons = [<AddReactionIcon />, <AddIcon />, <SendIcon />];
 
   const loggeduser = JSON.parse(localStorage.getItem("userInfo"));
@@ -212,24 +218,29 @@ const ChatPage = () => {
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: "15px" }}>
-                {loadChatBox &&(
-                  chats.map((chat, index) => {
-                    const senderImageType = getSenderImageType(loggeduser, chat.users);
+                {loadChatBox &&
+                  (() => {
+                    const chat = selectedChat;
+                    const senderImageType = getSenderImageType(
+                      loggeduser,
+                      chat.users
+                    );
                     const senderImage = getSenderImage(loggeduser, chat.users);
-                    const senderName = !chat.isGroupChat ? getSender(loggeduser, chat.users) : chat.chatName;
-                  
+                    const senderName = !chat.isGroupChat
+                      ? getSender(loggeduser, chat.users)
+                      : chat.chatName;
+
                     return (
-                      <React.Fragment key={chat._id || index}>
+                      <>
                         <Avatar
                           src={`data:${senderImageType};base64,${senderImage}`}
                         />
                         <Typography color="black" sx={{ fontSize: "18px" }}>
                           {senderName}
                         </Typography>
-                      </React.Fragment>
+                      </>
                     );
-                  })
-                )}
+                  })()}
               </Box>
               {loadChatBox && (
                 <Box

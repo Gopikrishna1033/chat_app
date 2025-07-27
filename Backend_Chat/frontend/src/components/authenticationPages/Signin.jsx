@@ -35,8 +35,14 @@ const Signin = () => {
     );
     const data = response.data;
     setData(data);
+     setName("");
+     setImage("");
+     setConfirmPassword("");
+     setPassword("");
+     setEmail("");
     if (response.status === 200) {
      setOpen(true)
+    
     }
   };
   const handleClose = () => {
