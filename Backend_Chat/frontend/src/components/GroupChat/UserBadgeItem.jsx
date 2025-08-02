@@ -7,23 +7,24 @@ const UserBadgeItem = ({handleFunction,user}) => {
     <>
       <Box
         sx={{
-          px: 2,
+          px: 1,
           py: 1,
           borderRadius: "10px",
           m: 1,
-          mb: 2,
-          fontSize: 14,
+          mb: 1,
+          fontSize: 12,
           backgroundColor: "#e0e0e0",
           display: "inline-flex",
           alignItems: "center",
-          gap: "10px",
+          // gap: "10px",
           cursor: "pointer",
           fontWeight:"bold"
+          
         }}
         onClick={handleFunction}
       >
         {user.name}
-        <CloseIcon fontSize="small" />
+        <CloseIcon  style={{fontSize:"12px",marginLeft:"5px"}}/>
       </Box>
     </>
   );

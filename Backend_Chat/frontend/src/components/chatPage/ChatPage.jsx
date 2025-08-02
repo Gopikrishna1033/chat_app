@@ -1,43 +1,43 @@
 import React, { useContext, useState } from "react";
 import axios from "axios";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import AddCallIcon from "@mui/icons-material/AddCall";
-import VideoCallIcon from "@mui/icons-material/VideoCall";
-import SendIcon from "@mui/icons-material/Send";
-import AddReactionIcon from "@mui/icons-material/AddReaction";
-import AddIcon from "@mui/icons-material/Add";
 import {
   AppBar,
   Avatar,
   Box,
-  Button,
-  Card,
-  CardContent,
   IconButton,
   InputAdornment,
   TextField,
-  Toolbar,
   Typography,
 } from "@mui/material";
+import {
+  SearchOutlined as SearchIcon,
+  AddCall as CallIcon,
+  VideoCall as VideoIcon,
+  Send as SendIcon,
+  AddReaction as ReactionIcon,
+  Add as AddIcon,
+} from "@mui/icons-material";
 import { chatContext } from "../context/ContextApi";
 import { useNavigate } from "react-router-dom";
-import SearchResults from "./SearchResults";
-import MyChats from "./MyChats";
 import MenuBox from "./MenuBox";
+import MyChats from "./MyChats";
 import {
   getSender,
   getSenderImage,
   getSenderImageType,
 } from "../../config/ChatLogic";
-import { useEffect } from "react";
+import UpdateGroupChatModal from "../GroupChat/UpdateGroupChatModal";
+
 const ChatPage = () => {
-  const userContext = useContext(chatContext);
+  const { user, setSelectedChat, chats, setChats, selectedChat } =
+    useContext(chatContext);
   const navigate = useNavigate();
-  const { user, setSelectedChat, chats, setChats, selectedChat } = userContext;
+
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [loadingChat, setLoadingChat] = useState(true);
-  const [loadChatBox, setLoadChatBox] = useState(false);
+  const [fetchAgain, setFetchAgain] = useState(false);
+
+  const loggedUser = JSON.parse(localStorage.getItem("userInfo"));
 
   const headers = {
     headers: {
@@ -46,270 +46,174 @@ const ChatPage = () => {
   };
 
   const handleSearchText = async (event) => {
+    const value = event.target.value;
+    setSearchText(value);
+    if (value.trim() === "") return setSearchResults([]);
+
     try {
-      const value = event.target.value;
-      setSearchText(value);
-
-      if (value.trim() === "") {
-        setSearchResults([]);
-        return;
-      }
-
-      const response = await axios.get(
+      const res = await axios.get(
         `http://localhost:8000/api/user?search=${value}`,
         headers
       );
-      setSearchResults(response?.data);
-    } catch (error) {
-      console.error("Search error:", error);
+      setSearchResults(res.data);
+    } catch (err) {
+      console.error("Search Error:", err);
     }
   };
+
+  const accessChat = async (userId) => {
+    try {
+      const res = await axios.post(
+        `http://localhost:8000/api/chats/`,
+        { userId },
+        headers
+      );
+      const data = res.data;
+      if (!chats.find((chat) => chat._id === data._id)) {
+        setChats([data, ...chats]);
+      }
+      setSelectedChat(data);
+    } catch (err) {
+      console.log("Access Chat Error:", err);
+    }
+  };
+
   const logout = () => {
     localStorage.clear();
     navigate("/");
   };
 
-  const accessChat = async (userId) => {
-    try {
-      // setLoadingChat(true);
-      const response = await axios.post(
-        `http://localhost:8000/api/chats/`,
-        { userId },
-        headers
-      );
-      const data = response?.data;
-      if (!chats.find((chat) => chat._id === data._id))
-        setChats([data, ...chats]);
-      setSelectedChat(data);
-      setLoadChatBox(!loadChatBox);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  // useEffect(() => {
-  //   if (selectedChat) {
-  //     setLoadChatBox(true); // only runs when selectedChat updates
-  //   }
-  // }, [selectedChat]);
+  const renderUserCard = (data) => (
+    <Box
+      key={data._id}
+      onClick={() => accessChat(data._id)}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        p: 1,
+        gap: 2,
+        cursor: "pointer",
+        borderRadius: 1,
+        "&:hover": { background: "#f0f0f0" },
+      }}
+    >
+      <Avatar src={`data:${data.imageType};base64,${data.image}`} />
+      <Typography>
+        {data.name} {data._id === user._id && "(You)"}
+      </Typography>
+    </Box>
+  );
 
-  const icons = [<AddReactionIcon />, <AddIcon />, <SendIcon />];
-
-  const loggeduser = JSON.parse(localStorage.getItem("userInfo"));
   return (
-    <>
-      <Box
-        sx={{
-          display: "flex",
-          width: "100%",
-          height: "100vh",
-          background: "#FAFAFA",
-        }}
-      >
-        <Box
-          sx={{
-            width: "23vw",
-            borderRight: "1px solid #ccc",
-            overflow: "auto",
-            "&::-webkit-scrollbar": {
-              display: "none",
-            },
+    <Box sx={{ display: "flex", height: "100vh", width: "100%" }}>
+      {/* Sidebar */}
+      <Box sx={{ width: "25vw", borderRight: "1px solid #ddd", p: 2 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+          <Typography variant="h6">
+            <Box component="span" sx={{ color: "#1976D2", fontWeight: "bold" }}>
+              Nex
+            </Box>
+            <Box component="span" sx={{ color: "#f44336", fontWeight: "bold" }}>
+              Talk
+            </Box>
+          </Typography>
+          <MenuBox logout={logout} />
+        </Box>
+
+        <TextField
+          fullWidth
+          placeholder="Search users..."
+          onChange={handleSearchText}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <SearchIcon />
+              </InputAdornment>
+            ),
           }}
+          sx={{ mb: 2 }}
+        />
+
+        {searchText.trim() ? (
+          searchResults.map(renderUserCard)
+        ) : (
+          <MyChats fetchAgain={fetchAgain} />
+        )}
+      </Box>
+
+      {/* Chat Area */}
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <AppBar
+          position="static"
+          sx={{ background: "#fff", boxShadow: "none", p: 2 }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "15px",
-              padding: "10px",
-              justifyContent: "center",
-              background: "#fff",
-              flex: 1,
-            }}
-          >
+          {selectedChat && (
             <Box
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
-                width: "100%",
                 alignItems: "center",
               }}
             >
-              <Typography variant="h5">
-                <Box
-                  component="span"
-                  sx={{ color: "#1976D2", fontWeight: "bold" }}
-                >
-                  Nex
-                </Box>
-                <Box
-                  component="span"
-                  sx={{ color: "#f44336", fontWeight: "bold" }}
-                >
-                  Talk
-                </Box>
-              </Typography>
-              <MenuBox logout={logout} />
-            </Box>
-
-            <Box>
-              <TextField
-                fullWidth
-                placeholder="search"
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <SearchOutlinedIcon />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                onChange={handleSearchText}
-                sx={{
-                  border: "1px solid #ccc",
-                  borderRadius: "50px",
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "50px",
-                    height: "2.75em",
-                    "& fieldset": {
-                      border: "none",
-                    },
-                    "&:hover fieldset": {
-                      border: "none",
-                    },
-                    "&.Mui-focused fieldset": {
-                      border: "1px solid #ccc",
-                    },
-                  },
-                }}
-              />
-            </Box>
-
-            <SearchResults
-              filteredChats={searchResults}
-              accessChat={accessChat}
-              loadingChat={loadingChat}
-            />
-            <MyChats />
-          </Box>
-        </Box>
-        <Box
-          sx={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            backgroundColor: "#F0F4F8",
-          }}
-        >
-          <AppBar
-            position="static"
-            sx={{
-              background: "white",
-              boxShadow: "none",
-              p: 2,
-              minHeight: "50px",
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: "15px" }}>
-                {loadChatBox &&
-                  (() => {
-                    const chat = selectedChat;
-                    const senderImageType = getSenderImageType(
-                      loggeduser,
-                      chat.users
-                    );
-                    const senderImage = getSenderImage(loggeduser, chat.users);
-                    const senderName = !chat.isGroupChat
-                      ? getSender(loggeduser, chat.users)
-                      : chat.chatName;
-
-                    return (
-                      <>
-                        <Avatar
-                          src={`data:${senderImageType};base64,${senderImage}`}
-                        />
-                        <Typography color="black" sx={{ fontSize: "18px" }}>
-                          {senderName}
-                        </Typography>
-                      </>
-                    );
-                  })()}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Avatar
+                  src={`data:${getSenderImageType(
+                    loggedUser,
+                    selectedChat.users
+                  )};base64,${getSenderImage(loggedUser, selectedChat.users)}`}
+                />
+                <Typography color="black">
+                  {!selectedChat.isGroupChat ? (
+                    getSender(loggedUser, selectedChat.users)
+                  ) : (
+                    <>
+                      {selectedChat.chatName}
+                      <UpdateGroupChatModal
+                        fetchAgain={fetchAgain}
+                        setFetchAgain={setFetchAgain}
+                      />
+                    </>
+                  )}
+                </Typography>
               </Box>
-              {loadChatBox && (
-                <Box
-                  sx={{ display: "flex", alignItems: "center", gap: "20px" }}
-                >
-                  <AddCallIcon sx={{ cursor: "pointer", color: "grey" }} />
-                  <VideoCallIcon sx={{ cursor: "pointer", color: "grey" }} />
-                </Box>
-              )}
-            </Box>
-          </AppBar>
-          <Box
-            sx={{
-              flex: 1,
-              overflow: "auto",
-              p: 2,
-            }}
-          >
-            {/* Chat messages, typing indicators, etc. */}
-            {!loadChatBox && (
-              <Typography
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  marginTop: "15rem",
-                }}
-              >
-                Welcome to the Nex Talk
-              </Typography>
-            )}
-          </Box>
-          {loadChatBox && (
-            <Box sx={{ padding: "0px 30px 30px 30px" }}>
-              <TextField
-                fullWidth
-                placeholder="Type something here..."
-                sx={{
-                  border: "1px solid #ccc",
-                  borderRadius: "10px",
-                  background: "#FAFAFA",
-                  fontSize: "24px",
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "10px",
-                    height: "3rem",
-                    "& fieldset": {
-                      border: "none",
-                    },
-                    "&:hover fieldset": {
-                      border: "none",
-                    },
-                    "&.Mui-focused fieldset": {
-                      border: "1px solid #ccc",
-                    },
-                  },
-                }}
-                slotProps={{
-                  input: {
-                    endAdornment: icons.map((icon, idx) => {
-                      return <IconButton key={idx}>{icon}</IconButton>;
-                    }),
-                  },
-                }}
-              />
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <CallIcon sx={{ color: "gray", cursor: "pointer" }} />
+                <VideoIcon sx={{ color: "gray", cursor: "pointer" }} />
+              </Box>
             </Box>
           )}
+        </AppBar>
+
+        <Box sx={{ flex: 1, p: 2, overflow: "auto" }}>
+          {!selectedChat && (
+            <Typography align="center" sx={{ mt: 20, color: "gray" }}>
+              Welcome to NexTalk!
+            </Typography>
+          )}
         </Box>
+
+        {selectedChat && (
+          <Box sx={{ px: 3, pb: 3 }}>
+            <TextField
+              fullWidth
+              placeholder="Type something here..."
+              sx={{ background: "#f9f9f9", borderRadius: 1 }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {[<ReactionIcon />, <AddIcon />, <SendIcon />].map(
+                      (icon, i) => (
+                        <IconButton key={i}>{icon}</IconButton>
+                      )
+                    )}
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+        )}
       </Box>
-    </>
+    </Box>
   );
 };
 

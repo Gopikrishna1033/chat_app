@@ -72,7 +72,7 @@ const GroupChatModal = ({ open, setOpen }) => {
         "http://localhost:8000/api/chats/group",
         {
           name: groupChatName,
-          users: JSON.stringify(selectedUsers.map((u) => u.id)),
+          users: JSON.stringify(selectedUsers.map((u) => u._id)),
         },
         config
       );

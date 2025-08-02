@@ -6,7 +6,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Box, IconButton, Typography } from '@mui/material';
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import GroupChatModal from './GroupChatModal';
+import GroupChatModal from '../GroupChat/GroupChatModal';
 
 const MenuBox = ({ logout }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);

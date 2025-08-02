@@ -80,6 +80,7 @@ const createGroupChat = asyncHandler(async (req, res) => {
       .send({ message: "Please Select atleast two member to create a group." });
   }
   var users = JSON.parse(req.body.users);
+  console.log(users, "users");
   if (users.length < 2) {
     return res
       .status(400)
@@ -153,7 +154,7 @@ const removeGroupMember = asyncHandler(async (req, res) => {
   if (!chatId || !userId) {
     res.status(400).json({ message: "chatId and userId are required" });
   }
- //The MongoDB $pop operator removes the first or last element from an array based on its position, but it doesn't directly remove a specific element (like a userId) from the array.To remove a specific member, you should use the $pull operator, which removes all instances of a specific value from an array.
+  //The MongoDB $pop operator removes the first or last element from an array based on its position, but it doesn't directly remove a specific element (like a userId) from the array.To remove a specific member, you should use the $pull operator, which removes all instances of a specific value from an array.
   const removeUser = await Chat.findByIdAndUpdate(
     chatId,
     { $pull: { users: userId } }, // Use $pull to remove the user from the users array
@@ -169,23 +170,23 @@ const removeGroupMember = asyncHandler(async (req, res) => {
   }
 });
 
-// delete the Group Chat 
+// delete the Group Chat
 
-const deleteGroupChat = asyncHandler(async(req,res)=>{
- const {chatId} = req.body
- if(!chatId){
-  res.status(400)
-  throw new Error ("Chat not found")
- }
- const deleteGroup = await Chat.findById(chatId)
-  if(!deleteGroup){
-    res.status(400)
-    throw new Error ("Group not found")
-  }else{
+const deleteGroupChat = asyncHandler(async (req, res) => {
+  const { chatId } = req.body;
+  if (!chatId) {
+    res.status(400);
+    throw new Error("Chat not found");
+  }
+  const deleteGroup = await Chat.findById(chatId);
+  if (!deleteGroup) {
+    res.status(400);
+    throw new Error("Group not found");
+  } else {
     await deleteGroup.deleteOne(); // or Chat.findByIdAndDelete(chatId)
     res.status(200).json({ message: "Group chat deleted successfully" });
   }
-})
+});
 
 module.exports = {
   accessChat,
