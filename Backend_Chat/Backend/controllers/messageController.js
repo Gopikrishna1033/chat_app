@@ -11,15 +11,15 @@ const sendMessages = asyncHandler(async (req, res) => {
   var newMessage = {
     sender: req.user._id,
     content: content,
-    chatId: chatId,
+    chat: chatId,
   };
   try {
     var message = await Message.create(newMessage);
-    message = await message.populate("sender", "name image");
+    message = await message.populate("sender", "name image imageType");
     message = await message.populate("chat");
     message = await User.populate(message, {
       path: "chat.users",
-      select: "name image email",
+      select: "name image email imageType",
     });
     await Chat.findByIdAndUpdate(req.body.chatId, {
       latestMessage: message,
@@ -37,7 +37,7 @@ const allMessages = asyncHandler(async (req, res) => {
       chat: req.params.chatId,
     })
       .populate("sender", "name image email")
-      .populate("chat");
+      .populate("chat ");
     res.json(messages);
   } catch (err) {
     res.status(500).json({ message: "Internal server error" });

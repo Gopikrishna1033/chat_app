@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 const chatModel = mongoose.Schema(
   {
     chatName: { type: String, trim: true },
@@ -11,7 +11,7 @@ const chatModel = mongoose.Schema(
     ],
     latestMessage: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "message",
+      ref: "Message",
     },
     groupAdmin: {
       type: mongoose.Schema.Types.ObjectId,
@@ -22,5 +22,5 @@ const chatModel = mongoose.Schema(
     timeStamps: true,
   }
 );
-const Chat = mongoose.model("Chat",chatModel) // creating the model for schema for interacting with database.
-module.exports = Chat
+const Chat = mongoose.model("Chat", chatModel); // creating the model for schema for interacting with database.
+module.exports = Chat;

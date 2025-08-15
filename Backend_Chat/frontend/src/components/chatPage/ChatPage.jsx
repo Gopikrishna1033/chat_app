@@ -29,6 +29,9 @@ import {
 import UpdateGroupChatModal from "../GroupChat/UpdateGroupChatModal";
 
 const ChatPage = () => {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [newMessages, setNewMessages] = useState();
   const { user, setSelectedChat, chats, setChats, selectedChat } =
     useContext(chatContext);
   const navigate = useNavigate();
@@ -104,6 +107,34 @@ const ChatPage = () => {
     </Box>
   );
 
+  const sendMessages = async (event) => {
+    if (newMessages) {
+      try {
+        const config = {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        };
+        const response = await axios.post(
+          "http://localhost:8000/api/messages",
+          { content: newMessages, chatId: selectedChat._id },
+          config
+        );
+        console.log(response?.data, "messages");
+        setMessages([...messages, response?.data]);
+        setNewMessages("");
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
+
+  const typingHandler = (e) => {
+    setNewMessages(e.target.value);
+  };
+  console.log(selectedChat?._id);
+  console.log(newMessages, "newMessages");
   return (
     <Box sx={{ display: "flex", height: "100vh", width: "100%" }}>
       {/* Sidebar */}
@@ -198,12 +229,24 @@ const ChatPage = () => {
               fullWidth
               placeholder="Type something here..."
               sx={{ background: "#f9f9f9", borderRadius: 1 }}
+              onChange={typingHandler}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessages();
+                }
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     {[<ReactionIcon />, <AddIcon />, <SendIcon />].map(
                       (icon, i) => (
-                        <IconButton key={i}>{icon}</IconButton>
+                        <IconButton
+                          key={i}
+                          onClick={i === 2 ? sendMessages : undefined}
+                        >
+                          {icon}
+                        </IconButton>
                       )
                     )}
                   </InputAdornment>
