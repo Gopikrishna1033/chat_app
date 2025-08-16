@@ -1,9 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import {
   AppBar,
   Avatar,
   Box,
+  CircularProgress,
   IconButton,
   InputAdornment,
   TextField,
@@ -27,6 +28,7 @@ import {
   getSenderImageType,
 } from "../../config/ChatLogic";
 import UpdateGroupChatModal from "../GroupChat/UpdateGroupChatModal";
+import ScrollableChat from "./Messages/ScrollableChat";
 
 const ChatPage = () => {
   const [messages, setMessages] = useState([]);
@@ -106,7 +108,33 @@ const ChatPage = () => {
       </Typography>
     </Box>
   );
-
+  const fetchMessages = async () => {
+    if (!selectedChat) {
+      return;
+    }
+    try {
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      };
+      setLoading(true);
+      const response = await axios.get(
+        `http://localhost:8000/api/messages/${selectedChat._id}`,
+        config
+      );
+      console.log(response?.data, "fetchMessages");
+      setMessages(response?.data);
+      setLoading(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  useEffect(() => {
+    fetchMessages();
+    console.log("test")
+  }, [selectedChat]);
   const sendMessages = async (event) => {
     if (newMessages) {
       try {
@@ -133,8 +161,7 @@ const ChatPage = () => {
   const typingHandler = (e) => {
     setNewMessages(e.target.value);
   };
-  console.log(selectedChat?._id);
-  console.log(newMessages, "newMessages");
+
   return (
     <Box sx={{ display: "flex", height: "100vh", width: "100%" }}>
       {/* Sidebar */}
@@ -202,6 +229,7 @@ const ChatPage = () => {
                       <UpdateGroupChatModal
                         fetchAgain={fetchAgain}
                         setFetchAgain={setFetchAgain}
+                        fetchMessages={fetchMessages}
                       />
                     </>
                   )}
@@ -214,11 +242,13 @@ const ChatPage = () => {
             </Box>
           )}
         </AppBar>
-
+          {loading ?(<CircularProgress/>):(<div>
+            <ScrollableChat messages={messages}/>
+          </div>)}
         <Box sx={{ flex: 1, p: 2, overflow: "auto" }}>
           {!selectedChat && (
             <Typography align="center" sx={{ mt: 20, color: "gray" }}>
-              Welcome to NexTalk!
+              Please select a chat to message..
             </Typography>
           )}
         </Box>

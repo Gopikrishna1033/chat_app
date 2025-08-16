@@ -33,16 +33,13 @@ const sendMessages = asyncHandler(async (req, res) => {
 
 const allMessages = asyncHandler(async (req, res) => {
   try {
-    const messages = await Message.findId({
-      chat: req.params.chatId,
-    })
-      .populate("sender", "name image email")
-      .populate("chat ");
-    res.json(messages);
-  } catch (err) {
-    res.status(500).json({ message: "Internal server error" });
+    const messages = await Message.find({ chat: req.params.chatId })
+      .populate("sender", "name email image imageType")
+      .populate("chat");
 
-    throw new Error(err.message);
+    return res.json(messages);
+  } catch (err) {
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
 

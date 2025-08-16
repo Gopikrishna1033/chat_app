@@ -16,7 +16,7 @@ import { chatContext } from "../context/ContextApi";
 import UserBadgeItem from "./UserBadgeItem";
 import axios from "axios";
 
-const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain }) => {
+const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }) => {
   const [open, setOpen] = useState(false);
   const [groupChatName, setGroupChatName] = useState("");
   const [search, setSearch] = useState("");
@@ -64,6 +64,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain }) => {
         setSelectedChat(res.data);
       }
       setFetchAgain(!fetchAgain);
+      fetchMessages()
     } catch (err) {
       console.error(err);
     }
