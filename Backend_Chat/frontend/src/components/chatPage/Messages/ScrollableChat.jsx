@@ -1,5 +1,4 @@
 import React, { useContext } from "react";
-import ScrollableFeed from "react-scrollable-feed";
 import { isLastMessage, isSameSender, isSameSenderMargin, issameUser } from "../../../config/ChatLogic";
 import { chatContext } from "../../context/ContextApi";
 import { Avatar } from "@mui/material";
@@ -7,7 +6,6 @@ const ScrollableChat = ({ messages }) => {
   const { user } = useContext(chatContext);
   return (
     <>
-      <ScrollableFeed>
         {messages &&
           messages.map((m, i) => (
             <div key={m._id} style={{ display: "flex",margin:"0 70px 0 70px" }}>
@@ -37,7 +35,6 @@ const ScrollableChat = ({ messages }) => {
               </span>
             </div>
           ))}
-      </ScrollableFeed>
     </>
   );
 };

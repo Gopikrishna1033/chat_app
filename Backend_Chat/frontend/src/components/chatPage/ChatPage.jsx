@@ -29,11 +29,19 @@ import {
 } from "../../config/ChatLogic";
 import UpdateGroupChatModal from "../GroupChat/UpdateGroupChatModal";
 import ScrollableChat from "./Messages/ScrollableChat";
+import io from "socket.io-client";
+import TypingIndicator from "../typingIndication/TypingIndicator";
+
+const ENDPOINT = "http://localhost:8000";
+var socket, selectedChatCompare;
 
 const ChatPage = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [newMessages, setNewMessages] = useState();
+  const [newMessages, setNewMessages] = useState("");
+  const [socketConnection, setSocketConnection] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const { user, setSelectedChat, chats, setChats, selectedChat } =
     useContext(chatContext);
   const navigate = useNavigate();
@@ -127,16 +135,57 @@ const ChatPage = () => {
       console.log(response?.data, "fetchMessages");
       setMessages(response?.data);
       setLoading(false);
+      socket.emit("join chat", selectedChat._id);
     } catch (err) {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    socket = io(ENDPOINT);
+    socket.emit("setup", user);
+    socket.on("connected", () => setSocketConnection(true));
+    socket.on("typing", () => setIsTyping(true));
+    socket.on("stop typing", () => setIsTyping(false));
+  }, []);
+
   useEffect(() => {
     fetchMessages();
-    console.log("test")
+    selectedChatCompare = selectedChat;
   }, [selectedChat]);
+
+  useEffect(() => {
+    // socket.on("message received", (newMessageReceived) => {
+    //   if (
+    //     !selectedChatCompare ||
+    //     selectedChatCompare._id !== newMessageReceived.chat._id
+    //   ) {
+    //     //give notification
+    //   } else {
+    //     setMessages((prevMessages) => [...prevMessages, newMessageReceived]);
+    //   }
+    // });
+    const handleMessage = (newMessageReceived) => {
+      if (
+        !selectedChatCompare ||
+        selectedChatCompare._id !== newMessageReceived.chat._id
+      ) {
+        // notification
+      } else {
+        setMessages((prevMessages) => [...prevMessages, newMessageReceived]);
+      }
+    };
+
+    socket.on("message received", handleMessage);
+
+    return () => {
+      socket.off("message received", handleMessage); // cleanup!
+    };
+  }, [selectedChatCompare]);
+
   const sendMessages = async (event) => {
     if (newMessages) {
+      socket.emit("stop typing", selectedChat._id);
       try {
         const config = {
           headers: {
@@ -150,7 +199,8 @@ const ChatPage = () => {
           config
         );
         console.log(response?.data, "messages");
-        setMessages([...messages, response?.data]);
+        socket.emit("new message", response?.data);
+        setMessages((prev) => [...prev, response?.data]);
         setNewMessages("");
       } catch (err) {
         console.log(err);
@@ -160,6 +210,22 @@ const ChatPage = () => {
 
   const typingHandler = (e) => {
     setNewMessages(e.target.value);
+    if (!socketConnection) return;
+
+    if (!typing) {
+      setTyping(true);
+      socket.emit("typing", selectedChat._id);
+    }
+    let lastTypingTime = new Date().getTime();
+    var timerLength = 3000;
+    setTimeout(() => {
+      var timeNow = new Date().getTime();
+      var timeDiff = timeNow - lastTypingTime;
+      if (timeDiff >= timerLength && typing) {
+        socket.emit("stop typing", selectedChat._id);
+        setTyping(false);
+      }
+    }, timerLength);
   };
 
   return (
@@ -242,9 +308,22 @@ const ChatPage = () => {
             </Box>
           )}
         </AppBar>
-          {loading ?(<CircularProgress/>):(<div>
-            <ScrollableChat messages={messages}/>
-          </div>)}
+        {loading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "500px",
+            }}
+          >
+            <CircularProgress />
+          </div>
+        ) : (
+          <div>
+            <ScrollableChat messages={messages} />
+          </div>
+        )}
         <Box sx={{ flex: 1, p: 2, overflow: "auto" }}>
           {!selectedChat && (
             <Typography align="center" sx={{ mt: 20, color: "gray" }}>
@@ -255,11 +334,19 @@ const ChatPage = () => {
 
         {selectedChat && (
           <Box sx={{ px: 3, pb: 3 }}>
+            {isTyping ? (
+              <div>
+                <TypingIndicator />
+              </div>
+            ) : (
+              <></>
+            )}
             <TextField
               fullWidth
               placeholder="Type something here..."
               sx={{ background: "#f9f9f9", borderRadius: 1 }}
               onChange={typingHandler}
+              value={newMessages}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
