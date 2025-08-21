@@ -35,6 +35,10 @@ app.use("/api/chats", chatRoutes);
 //message routes
 app.use("/api/messages", messageRoutes);
 
+////////////deployment////////
+
+////////////deployment////////
+
 //error handlers
 app.use(notFound);
 app.use(errorHandler);
@@ -63,8 +67,8 @@ io.on("connection", (socket) => {
     console.log("User Joined Room :" + room);
   });
 
-  socket.on("typing",(room)=>socket.in(room).emit("typing"))
-  socket.on("stop typing",(room)=>socket.in(room).emit("stop typing"))
+  socket.on("typing", (room) => socket.in(room).emit("typing"));
+  socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
   socket.on("new message", (newmMessageRecieved) => {
     var chat = newmMessageRecieved.chat;

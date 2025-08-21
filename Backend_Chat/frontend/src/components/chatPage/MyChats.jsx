@@ -9,8 +9,15 @@ import {
 } from "../../config/ChatLogic";
 
 const MyChats = ({ fetchAgain }) => {
-  const { selectedChat, setSelectedChat, user, chats, setChats } =
-    useContext(chatContext);
+  const {
+    selectedChat,
+    setSelectedChat,
+    user,
+    chats,
+    setChats,
+    notifications,
+    setNotifications,
+  } = useContext(chatContext);
   const [loggeduser, setLoggedUser] = useState();
 
   useEffect(() => {
@@ -33,12 +40,18 @@ const MyChats = ({ fetchAgain }) => {
     fetchChats();
   }, [fetchAgain]);
 
+  const handleSelectedChat = (chat) => {
+    setSelectedChat(chat);
+    setNotifications(notifications.filter((n) => n.chat._id !== chat._id));
+  };
+
   return (
     <Box>
       {chats?.map((chat) => (
         <Card
           key={chat._id}
-          onClick={() => setSelectedChat(chat)}
+          // onClick={() => setSelectedChat(chat)}
+          onClick={() => handleSelectedChat(chat)}
           sx={{ cursor: "pointer", mb: 1, boxShadow: "none" }}
         >
           <CardContent sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -57,6 +70,17 @@ const MyChats = ({ fetchAgain }) => {
                 ? getSender(loggeduser, chat.users)
                 : chat.chatName}
             </Typography>
+            {notifications.some((n) => n.chat._id === chat._id) && (
+              <span
+                style={{
+                  color: "black",
+                  marginLeft: "auto",
+                  fontWeight: "bold",
+                }}
+              >
+                •
+              </span>
+            )}
           </CardContent>
         </Card>
       ))}
@@ -65,7 +89,3 @@ const MyChats = ({ fetchAgain }) => {
 };
 
 export default MyChats;
-
-
-
-

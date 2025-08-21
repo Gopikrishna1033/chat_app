@@ -7,6 +7,7 @@ const ContextApi = ({children}) => {
     const [user,setUser] = useState()
     const [selectedChat,setSelectedChat] = useState()
     const [chats,setChats] = useState([])
+    const [notifications,setNotifications] = useState([])
     const navigate = useNavigate()
     useEffect(()=>{
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -26,6 +27,8 @@ const ContextApi = ({children}) => {
           setSelectedChat,
           chats,
           setChats,
+          setNotifications,
+          notifications
         }}
       >
         {children}

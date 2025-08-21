@@ -42,7 +42,7 @@ const ChatPage = () => {
   const [socketConnection, setSocketConnection] = useState(false);
   const [typing, setTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const { user, setSelectedChat, chats, setChats, selectedChat } =
+  const { user, setSelectedChat, chats, setChats, selectedChat,notifications,setNotifications } =
     useContext(chatContext);
   const navigate = useNavigate();
 
@@ -132,7 +132,6 @@ const ChatPage = () => {
         `http://localhost:8000/api/messages/${selectedChat._id}`,
         config
       );
-      console.log(response?.data, "fetchMessages");
       setMessages(response?.data);
       setLoading(false);
       socket.emit("join chat", selectedChat._id);
@@ -170,9 +169,18 @@ const ChatPage = () => {
         !selectedChatCompare ||
         selectedChatCompare._id !== newMessageReceived.chat._id
       ) {
-        // notification
+        if (!notifications.some((n) => n._id === newMessageReceived._id)) {
+          setNotifications([newMessageReceived, ...notifications]);
+          setFetchAgain(!fetchAgain);
+        }
       } else {
-        setMessages((prevMessages) => [...prevMessages, newMessageReceived]);
+        setMessages((prevMessages) => {
+          if (prevMessages.some((m) => m._id === newMessageReceived._id)) {
+            return prevMessages; // don't add duplicates
+          }
+          return [...prevMessages, newMessageReceived];
+        });
+
       }
     };
 
@@ -182,7 +190,7 @@ const ChatPage = () => {
       socket.off("message received", handleMessage); // cleanup!
     };
   }, [selectedChatCompare]);
-
+console.log(notifications,"notiffy")
   const sendMessages = async (event) => {
     if (newMessages) {
       socket.emit("stop typing", selectedChat._id);
@@ -198,7 +206,6 @@ const ChatPage = () => {
           { content: newMessages, chatId: selectedChat._id },
           config
         );
-        console.log(response?.data, "messages");
         socket.emit("new message", response?.data);
         setMessages((prev) => [...prev, response?.data]);
         setNewMessages("");
